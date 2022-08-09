@@ -24,38 +24,10 @@ class TarefaController extends Controller
      */
     public function index()
     {
+       $user_id = auth()->user()->id;
+       $tarefas = Tarefa::where('user_id', $user_id)->paginate(10);
 
-        $id = Auth::user()->id;
-        $name = Auth::user()->name;
-        $email = Auth::user()->email;
-
-        echo "ID $id você $name está logado no sistema, com o email $email";
-
-        /*
-        if(Auth::check()){
-            $id = Auth::user()->id;
-            $name = Auth::user()->name;
-            $email = Auth::user()->email;
-            return "ID $id você $name está logado no sistema, com o email $email";
-        }else{
-            return 'você não está logado no sistema';
-        }
-
-
-       if(auth()->check()){
-                $id = auth()->user()->id;
-                $name = auth()->user()->name;
-                $email = auth()->user()->email;
-            return "ID $id você $name está logado no sistema, com o email $email";
-        }else{
-            return 'você não está logado no sistema';
-        }
-        */
-
-
-
-        echo "<br>";
-        return 'Chegamos até aqui';
+       return view('tarefa.index', ['tarefas'=> $tarefas]);
     }
 
     /**
@@ -76,7 +48,10 @@ class TarefaController extends Controller
      */
     public function store(Request $request)
     {
-        $tarefa = Tarefa::create($request->all());
+        $dados = $request->all('tarefa', 'data_limite_conclusao');
+        $dados['user_id'] = auth()->user()->id;
+
+        $tarefa = Tarefa::create($dados);
         $destinatario = auth()->user()->email;
 
         Mail::to($destinatario)->send(new NovaTarefaMail($tarefa));
